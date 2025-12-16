@@ -1,13 +1,15 @@
-import React, { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState } from "react";
 import type { Producto } from "../models/Producto";
 import type { CartItem } from "../models/CartItem";
 
 //1.definimos los datos que tendra el carrito
 interface CartContextType {
-  items: Producto[];
+  items: CartItem[];
   addItem: (producto: Producto) => void;
   removeItem: (id: number) => void;
   clearCart: () => void;
+  totalItems: number;
+  totalPrecio: number;
 }
 
 //2. creamos contexto con un valor inicial vacio
@@ -41,7 +43,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   // B) Eliminar por id
   function removeItem(id: number) {
-    setItems((prev) => prev.filter((item) => item.id !== id));
+    setItems((prev) => prev.filter((item) => item.producto.id !== id));
   }
 
   // C) Vaciar carrito
@@ -49,8 +51,17 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setItems([]);
   }
 
+  //totalItems
+  const totalItems = items.reduce((acc, item) => acc + item.cantidad, 0);
+
+  //total precio
+  const totalPrecio = items.reduce(
+    (acc, item) => acc + item.producto.price * item.cantidad,
+    0
+  );
+
   return (
-    <CartContext.Provider value={{ items, addItem, removeItem, clearCart }}>
+    <CartContext.Provider value={{ items, addItem, removeItem, clearCart, totalItems, totalPrecio }}>
       {children}
     </CartContext.Provider>
   );

@@ -4,7 +4,7 @@ import { useCart } from "../../context/CartContext"
 
 export function Header(){
 const{items} = useCart();
-const totalItems= items.length
+const { totalItems } = useCart();
 console.log(items);
     return(
         <div>
