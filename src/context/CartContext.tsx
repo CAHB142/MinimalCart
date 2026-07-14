@@ -10,6 +10,7 @@ interface CartContextType {
   clearCart: () => void;
   totalItems: number;
   totalPrecio: number;
+  decrementItem: (id: number) => void;
 }
 
 //2. creamos contexto con un valor inicial vacio
@@ -60,8 +61,25 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     0
   );
 
+  function decrementItem(id: number) {
+    setItems((prev) => {
+      const item = prev.find((p) => p.producto.id === id);
+      if (!item) return prev;
+      if (item.cantidad === 1) {
+        return prev.filter((x) => x.producto.id !== id);
+      }
+
+      return prev.map((x) =>
+        x.producto.id === id ? { ...x, cantidad: x.cantidad - 1 } : x
+      );
+    });
+  }
+
+
   return (
-    <CartContext.Provider value={{ items, addItem, removeItem, clearCart, totalItems, totalPrecio }}>
+    <CartContext.Provider
+      value={{ items, addItem, removeItem, clearCart, totalItems, totalPrecio, decrementItem }}
+    >
       {children}
     </CartContext.Provider>
   );

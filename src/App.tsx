@@ -1,103 +1,48 @@
+import { useState } from "react";
 import type { Producto } from "./models/Producto";
 import { Header } from "./components/Header/Header";
 import { ProductGrid } from "./components/ProductGrid/ProductGrid";
-import { useState, useEffect } from "react";
-import { obtenerProductos } from "./services/productosService";
 import { SkeletonCard } from "./components/SkeletonCard/SkeletonCard";
 import { CategoryFilter } from "./components/CategoryFilter/CategoryFilter";
 import { SearchBar } from "./components/SearchBar/SearchBar";
+import { CartSummary } from "./components/CartSummary/CartSummary";
+import { useProductos } from "./hooks/useProductos";
 import styles from "./App.module.css";
 
-// const productMock:Producto ={
-//   id:1,
-//   title:'camiseta',
-//   price:50000,
-//   description:"camiseta de algodon",
-//   category:'ropa',
-//   image:'/assets/camiseta.jpg'
-// }
-
-// const producto1:Producto ={
-//     id:1,
-//     title:'zapatos',
-//     price:50,
-//     description:'zapatillas',
-//     category:'zapatos',
-//     image:''
-// }
-// const producto2:Producto ={
-//     id:1,
-//     title:'calzoncillos',
-//     price:50,
-//     description:'ropa interior de microfibra',
-//     category:'ropa interior',
-//     image:''
-// }
-// const producto3:Producto ={
-//     id:3,
-//     title:'collar',
-//     price:50,
-//     description:'collar de perlas',
-//     category:'joyeria',
-//     image:''
-// }
-
-// const arrayProducto:Producto[] =[productMock,producto1,producto2,producto3]
 
 function App() {
-  const [productos, setProductos] = useState<Producto[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { productos, loading, error, recargar } = useProductos();
+
   const [categoria, setCategoria] = useState("all");
   const [busqueda, setBusqueda] = useState("");
   const [productoSeleccionado, setProductoSeleccionado] =
     useState<Producto | null>(null);
+  
+
 
   function onSeleccionar(producto: Producto) {
     setProductoSeleccionado(producto);
   }
 
   //condición ? valor_si_es_true : valor_si_es_false
-  const filtrarProductos =
-    categoria === "all"
-      ? productos
-      : productos.filter((p) => p.category === categoria);
 
-  let resultadoBusqueda = productos;
+
+let productosFiltrados = productos;
 
   if (categoria !== "all") {
-    resultadoBusqueda = resultadoBusqueda.filter(
-      (p) => p.category == categoria
+    productosFiltrados = productosFiltrados.filter(
+      (producto) => producto.category === categoria
     );
   }
 
   if (busqueda.trim() !== "") {
-    resultadoBusqueda = resultadoBusqueda.filter((p) =>
-      p.title.toLowerCase().includes(busqueda.toLowerCase())
+    productosFiltrados = productosFiltrados.filter((producto) =>
+      producto.title.toLowerCase().includes(busqueda.trim().toLowerCase())
     );
   }
 
-  async function cargarProductos() {
-    try {
-      setLoading(true);
-      setError(null);
 
-      const data = await obtenerProductos();
-      setProductos(data);
-    } catch (error) {
-      setError("No se pudieron cargar los productos. Intenta más tarde.");
-    } finally {
-      setLoading(false);
-    }
-  }
 
-  useEffect(() => {
-    cargarProductos();
-  }, []);
-
-  function recargar() {
-    cargarProductos();
-  }
 
   return (
     <main >
@@ -117,10 +62,6 @@ function App() {
 
       <SearchBar valor={busqueda} onChange={setBusqueda}/>
       
-      {/* <input
-        placeholder="Buscar producto..."
-        onChange={(e) => setBusqueda(e.target.value)}
-      /> */}
       {loading && (
         <div className={styles.contenedor}>
           <div className={styles.grid}>
@@ -168,11 +109,11 @@ function App() {
       )}
 
       {error && <p>{error}</p>}
-
+      <CartSummary/>
       {!loading && !error && (
         <>
           <ProductGrid
-            productos={resultadoBusqueda}
+            productos={productosFiltrados}
             onSeleccionar={onSeleccionar}
           />
 
